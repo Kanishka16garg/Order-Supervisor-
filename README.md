@@ -1,18 +1,87 @@
-# Order Supervisor — Autonomous Order Supervisor (AI Implementation Engineer Assignment)
 
-An event-driven, long-running **AI Order Supervisor** proof-of-concept that continuously monitors a single order throughout its entire lifecycle. Built with **Temporal Python SDK**, **FastAPI**, **PostgreSQL / SQLite**, and **Next.js**.
+# Sagepilot — Autonomous Order Supervisor
+
+Sagepilot is an autonomous Order Supervisor prototype that continuously monitors and manages the lifecycle of an order. It demonstrates durable, long-running workflows, event-driven agentic reasoning, and safe tool execution suitable for evaluation in an AI systems engineering assignment.
 
 ---
 
-## 🌟 Core Features
+**Task & Problem Statement**
 
-- **Long-Running Temporal Workflows**: One workflow execution per order (`OrderSupervisorWorkflow`), keeping state alive, supporting sleep timers, and waking on incoming signals.
-- **Lightweight Event Classifier**: Filters incoming order signals (`payment_confirmed`, `shipment_delayed`, `delivered`) before waking the main LLM agent to prevent wasteful inference calls.
-- **Structured Agentic Decision Engine**: Pydantic-validated agent outputs (`ACT`, `WAIT`, `TERMINATE`) with automatic tool calling (`message_logistics_team`, `message_customer`, `create_internal_note`, `escalate_issue`).
-- **Dynamic Runtime Instructions**: Inject custom policy rules into running workflows (e.g. *"If shipment is delayed, offer a 15% discount code"*) via Temporal signals without interrupting state.
-- **Compact Rolling Memory & Audit Timeline**: Maintains concise rolling context for token efficiency alongside a complete chronological event/activity timeline.
-- **Workflow Lifecycle Controls**: Start, Pause/Interrupt, Resume, and Terminate order workflows from the dashboard UI.
-- **End-of-Run Summary & Learnings**: Automatically synthesizes final summary, executed actions list, operational learnings, and recommendations when the order reaches terminal state (`delivered`).
+- Task: Build an automated supervisor that can run for the lifetime of an order, react to incoming events, and perform operational actions while maintaining a concise, rolling memory and audit trail.
+- Problem: Real-world order supervision involves long delays, intermittent signals, and costly LLM calls. The system must minimize unnecessary inference, preserve state across long waits, support runtime policy changes, and produce auditable outcomes.
+
+---
+
+**What I built**
+
+- A Temporal-style `OrderSupervisorWorkflow` that persists state and supports signals (events, instructions, pause/resume, terminate).
+- A lightweight classifier that filters events and wakes the agent only when necessary.
+- A structured agent runtime that returns Pydantic-validated decisions and safely invokes mocked business tools.
+- A Next.js dashboard to spawn runs, inject events, add instructions, and inspect timeline and summaries.
+- A deterministic fallback executor and agent behavior so the demo is reproducible without paid LLM or Temporal.
+
+---
+
+**Tech stack**
+
+- Backend: Python, FastAPI, async SQLAlchemy
+- Workflow: Temporal SDK pattern with a local fallback executor
+- Frontend: Next.js (App Router)
+- Persistence: Postgres recommended (production) / SQLite (zero-setup demo)
+- Optional: OpenAI / Gemini for LLMs (optional; fallback available)
+
+---
+
+**Core functionalities**
+
+- Long-running per-order workflows supporting sleep/wake and durable signals
+- Event classification to reduce unnecessary LLM inference
+- Structured agent outputs: `ACT`, `WAIT`, `TERMINATE` with tool call lists
+- Mocked business tools for safe side-effect demonstration and audit logging
+- Runtime policy injection (dynamic instructions) while workflows run
+- End-of-run summary generation with learnings and recommended actions
+- End-to-end automated verification script: `backend/test_e2e.py`
+
+---
+
+**Architecture (visual)**
+
+```mermaid
+flowchart LR
+       A[Next.js Dashboard] -->|HTTP| B[FastAPI Backend]
+       B --> C[(Database)]
+       B --> D[Temporal Engine / Fallback Executor]
+       D --> E[Activities: Classifier, Agent, Tools, Summary]
+       E --> C
+```
+
+---
+
+**How this satisfies the assignment**
+
+- Implements long-running workflows with durable signals and timers.
+- Includes event classification and an agent with structured outputs.
+- Demonstrates safe tool calls and audit logging.
+- Provides local reproducibility via SQLite + deterministic fallback.
+- Includes an automated end-to-end test to reproduce the full lifecycle.
+- Clear documentation and a demo scenario focused for evaluators.
+
+---
+
+**Quick evaluation checklist**
+
+1. `python backend/test_e2e.py` runs and produces lifecycle logs.
+2. Start backend & frontend and reproduce: spawn run → inject events (payment_confirmed, shipment_delayed, delivered) → confirm timeline and final summary.
+3. Verify `Run.final_summary` exists in DB and UI.
+4. Review `backend/app/services/temporal_manager.py` to confirm Temporal integration and fallback behavior.
+
+---
+
+If you want, I will also:
+- Add a short `EVALUATION.md` with explicit checkboxes for reviewers.
+- Produce a PNG architecture diagram for your presentation slides.
+
+Tell me which of the optional items you'd like and I'll add them and push the repo.
 
 ---
 
