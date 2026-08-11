@@ -77,14 +77,6 @@ flowchart LR
 
 ---
 
-If you want, I will also:
-- Add a short `EVALUATION.md` with explicit checkboxes for reviewers.
-- Produce a PNG architecture diagram for your presentation slides.
-
-Tell me which of the optional items you'd like and I'll add them and push the repo.
-
----
-
 ## 🏗️ Architecture
 
 ```
