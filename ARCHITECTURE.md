@@ -40,23 +40,5 @@ This document summarizes the system architecture, the core components, and where
 - Rolling memory and timeline: [backend/app/db/models.py](backend/app/db/models.py#L1) and [backend/app/temporal/activities.py](backend/app/temporal/activities.py#L1)
 - Final summary generation: [backend/app/temporal/activities.py](backend/app/temporal/activities.py#L1) -> `generate_end_of_run_summary_activity`
 
-## Demo checklist (quick)
 
-1. Start backend and show logs from `uvicorn`.
-2. (Optional) Start Temporal in Docker and show connection message. If not available, show fallback message in `temporal_manager` logs.
-3. Start frontend and open `http://localhost:3000`.
-4. Spawn run for `ORD-9082` using `High-Value VIP Order Guard`.
-5. Inject `payment_confirmed` and explain classifier decision.
-6. Inject `shipment_delayed` and show agent wake + tool calls.
-7. Add dynamic instruction (15% discount) and show `WORKFLOW_STATE` activity.
-8. Inject `delivered` and show final summary + recommendations.
 
-## Notes on Postgres vs SQLite
-
-The repository is written to work in either mode:
-- For quick local demos we use SQLite by default (`sqlite+aiosqlite:///./order_supervisor.db`).
-- For production-like evaluation use Postgres; set `DATABASE_URL` to a Postgres URI. The backend code will adapt the URI for the async driver automatically.
-
----
-
-If you want a one-slide visual or a small diagram file for your video, tell me whether you prefer a PNG or a plaintext ASCII diagram and I’ll generate it next.
