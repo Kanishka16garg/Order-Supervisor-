@@ -134,11 +134,41 @@ python backend/test_e2e.py
 
 ---
 
-## 🎥 Walkthrough Video Script / Demo Scenario
+## Demo Scenario & Evaluation Checklist
 
-1. **Start Workflow**: Select "High-Value VIP Order Guard" template and click **Spawn Workflow Run** for Order `#ORD-9082`.
-2. **Observe Sleep State**: Note badge transitioning to `😴 SLEEPING` with next scheduled wakeup timer.
-3. **Inject Event**: Click `[Payment Confirmed]` preset button -> Note classifier decision in timeline.
-4. **Inject Delay Anomaly**: Click `[🚨 Shipment Delayed]` -> Observe Agent waking immediately, executing `message_logistics_team` and `message_customer` tools, and updating compact memory.
-5. **Add Dynamic Instruction**: Type *"If shipment is delayed, offer a 15% discount code"* into the prompt bar -> Observe instant signal processing.
-6. **Finalize Lifecycle**: Click `[Order Delivered]` -> Observe status transitioning to `✅ COMPLETED` and rendering the End-of-Run Summary & Learnings card!
+The following concise scenario reproduces the primary behaviors an evaluator should verify. Run these steps and check the expected outputs listed under "Evaluation criteria".
+
+Reproduction steps
+1. Create a run using the `High-Value VIP Order Guard` template for an example order (e.g. `ORD-9082`).
+2. Observe initial workflow state in the dashboard (should create a `Run` row in the database and start the workflow).
+3. Inject `payment_confirmed` (UI or API) and confirm the event is recorded in the timeline.
+4. Inject `shipment_delayed` and verify the classifier marks it as an anomaly and the agent wakes.
+5. Confirm the agent's decision triggers the mocked tools `message_logistics_team` and `message_customer` and the corresponding `TOOL_EXECUTION` activities are stored.
+6. Signal a dynamic runtime instruction (e.g. "Offer 15% discount for VIP") and observe it being appended to the run's instructions and influencing subsequent decisions.
+7. Inject `delivered` and verify the run moves to `COMPLETED` and the `final_summary` is generated and persisted.
+
+Evaluation criteria (what reviewers should check)
+- Workflow lifecycle: `SCHEDULED` → `ACTIVE` → `SLEEPING` / `AWAKE` transitions occur as expected.
+- Classifier decisions are present in the timeline just after relevant events.
+- Agent outputs are structured JSON stored or logged and tool calls appear as `TOOL_EXECUTION` activities.
+- Final summary: `Run.final_summary` exists and contains a human-readable narrative.
+- End-to-end test: `python backend/test_e2e.py` runs without errors and prints the expected lifecycle logs.
+
+Files for quick review
+- Backend entrypoint: [backend/app/main.py](backend/app/main.py#L1)
+- Runs API: [backend/app/api/runs.py](backend/app/api/runs.py#L1)
+- Workflow & fallback: [backend/app/temporal/workflows.py](backend/app/temporal/workflows.py#L1) and [backend/app/services/temporal_manager.py](backend/app/services/temporal_manager.py#L1)
+- Agent & classifier: [backend/app/services/agent.py](backend/app/services/agent.py#L1) and [backend/app/services/classifier.py](backend/app/services/classifier.py#L1)
+- Frontend dashboard: [frontend/app/page.tsx](frontend/app/page.tsx#L1)
+
+Run the validation test
+
+```bash
+python backend/test_e2e.py
+```
+
+Expected artifacts
+- Timeline entries in the UI and DB: `WORKFLOW_STATE`, `TOOL_EXECUTION`, `FINAL_SUMMARY`.
+- `order_supervisor.db` (SQLite) or Postgres tables populated with `Run`, `Event`, and `Activity` rows.
+
+If you'd like, I can also create a single short `EVALUATION.md` geared strictly to reviewers with step-by-step verification checkboxes. Tell me if you want that and I'll add it and push it to the repo.
