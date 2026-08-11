@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+sqlalchemy
+aiosqlite
+temporalio
+pydantic
+pydantic-settings
+openai
+httpx
+python-dotenv
